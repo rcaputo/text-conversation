@@ -1,0 +1,10 @@
+# $Id$
+CHANGES
+MANIFEST
+META.yml                                 Module meta-data (added by MakeMaker)
+Makefile.PL
+README
+TestLib.pm
+examples/tk-irc.perl
+lib/Text/Conversation.pm
+t/simple.t

@@ -39,7 +39,7 @@ my %threaders;
 # knows about and the functions that will handle those events.
 
 while (my ($net, $info) = each %networks) {
-  # Create the component that will represent an IRC network.
+	# Create the component that will represent an IRC network.
 	POE::Component::IRC->new($net);
 
 	# Create the session that will interact with that network.

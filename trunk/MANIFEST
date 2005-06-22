@@ -1,7 +1,6 @@
 # $Id$
 CHANGES
 MANIFEST
-META.yml                                 Module meta-data (added by MakeMaker)
 Makefile.PL
 README
 TestLib.pm

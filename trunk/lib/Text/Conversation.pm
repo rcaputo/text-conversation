@@ -740,7 +740,7 @@ an e-mail message.
 
 Text::Conversation also keeps track of people who have spoken to each
 other, either explicitly or implicitly.  Chances are good that an
-otherwise undirected message is aimed at a person is part of an
+otherwise undirected message is aimed at a person and is part of an
 ongoing conversation.
 
 The module also incorporates penalties.  The link between two messages

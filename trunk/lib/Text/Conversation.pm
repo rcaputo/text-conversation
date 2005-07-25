@@ -734,9 +734,9 @@ The most common question so far is "How does it work?"  That's often
 followed by the leading "Does it just look for another speaker's ID at
 the start of the message?"  Text::Conversation uses multiple
 heuristics to determine a message's referent.  To be sure, the
-presence of another speaker's ID counts for a lot, but so common words
-between two messages.  Consider them similar to quoted text in an
-e-mail message.
+presence of another speaker's ID counts for a lot, but so do common
+words between two messages.  Consider them similar to quoted text in
+an e-mail message.
 
 Text::Conversation also keeps track of people who have spoken to each
 other, either explicitly or implicitly.  Chances are good that an

@@ -10,6 +10,7 @@ WriteMakefile(
 	NAME         => 'Text::Conversation',
 	AUTHOR       => 'Rocco Caputo <rcaputo@cpan.org>',
 	ABSTRACT     => 'Turn a conversation into threads, one line at a time.',
+	LICENSE      => 'perl',
 	VERSION_FROM => 'lib/Text/Conversation.pm',
 
 	PREREQ_PM    => {

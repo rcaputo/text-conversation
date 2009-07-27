@@ -60,13 +60,33 @@ sub new {
 	my %stopwords;
 
 	foreach my $stopword (keys %$stopwords) {
-		$stopwords{$self->_word_stem($stopword)}++;
+#		$stopwords{$self->_word_stem($stopword)}++;
 	}
 
 	$self->[CT_STOPWORDS] = \%stopwords;
 
 	return $self;
 }
+
+#sub hear {
+#	my ($self, $nick, $ident, $host, $text) = @_;
+#}
+#
+#sub see {
+#	my ($self, $nick, $ident, $host, $text) = @_;
+#}
+#
+#sub rename {
+#	my ($self, $old_nick, $new_nick, $ident, $host) = @_;
+#}
+#
+#sub arrival {
+#	my ($self, $nick, $ident, $host) = @_;
+#}
+#
+#sub departure {
+#	my ($self, $nick, $ident, $host) = @_;
+#}
 
 sub observe {
 	my ($self, $nick, $text) = @_;
@@ -894,17 +914,29 @@ person), so it's "fixed" to point to 01 (because 03 refers to that).
 
 There are probably other things.
 
+=head1 BUG TRACKER
+
+https://rt.cpan.org/Dist/Display.html?Status=Active&Queue=Text-Conversation
+
+=head1 REPOSITORY
+
+http://thirdlobe.com/svn/text-conversation/
+
+=head1 OTHER RESOURCES
+
+http://search.cpan.org/dist/Text-Conversation/
+
 =head1 AUTHORS
 
-Rocco Caputo <rcaputo@cpan.org> conceived of and created
-Text::Conversation with initial feedback and coments from the
-residents of various channels on irc.perl.org.
+Rocco Caputo  conceived of and created Text::Conversation with initial
+feedback and coments from the residents of various channels on
+irc.perl.org.
 
 =head1 LICENSE
 
-Except where otherwise noted, Text::Conversation is Copyright 2005 by
-Rocco Caputo.  All rights are reserved.  Text::Conversation is free
-software.  You may modify and/or redistribute it under the same terms
-as Perl itself.
+Except where otherwise noted, Text::Conversation is Copyright
+2005-2009 by Rocco Caputo.  All rights are reserved.
+Text::Conversation is free software.  You may modify and/or
+redistribute it under the same terms as Perl itself.
 
 =cut

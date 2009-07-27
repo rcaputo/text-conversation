@@ -3,7 +3,7 @@
 
 use warnings;
 use strict;
-use lib qw( lib /home/troc/projects/todo-add-to-repository/know/know-2 );
+use lib qw( lib /home/troc/projects/workbench /home/troc/projects/text-conversation/lib );
 
 use Tk;
 use Tk::Tree;
@@ -11,7 +11,7 @@ use Tk::Label;
 use Tk::Notebook;
 
 use Util::Common qw(try_uptime);
-use Util::Backend;
+use Util::Backend::POE qw(svc_init svc_run);
 use Text::Conversation;
 
 select STDOUT; $| = 1;
@@ -31,7 +31,8 @@ $top->update();
 
 ### PROCEDURE DIVISION.
 
-svc_run_poe("10.0.0.25", 54321);
+svc_init("10.0.0.25", 54321);
+svc_run();
 exit 0;
 
 ### Handle IRC messages.
@@ -39,85 +40,93 @@ exit 0;
 sub on_ctcp_action {
 	my $msg = shift;
 	return unless defined $msg->message();
-
-	my $response = try_all(
-		$msg,
-		$msg->message(),
-		"public",
-		$msg->nick(),
-		0,
+	my $threader = get_threader($msg);
+	my ($this_id, $referent_id, $debug_text) = $threader->see(
+		$msg->nick(), $msg->ident(), $msg->host(), $msg->message()
 	);
-	if (defined $response) {
-		if (ref($response) eq "ARRAY") {
-			$msg->say($_) foreach @$response;
-		}
-		else {
-			$msg->say($response);
-		}
-		msg_send($msg);
-	}
+	refresh_tree($msg, $threader);
 }
 
 sub on_public {
 	my $msg = shift;
 	return unless defined $msg->message();
-
-	my $response = try_all(
-		$msg,
-		$msg->message(),
-		"public",
-		$msg->csnick(),
-		$msg->addressed(),
+	my $threader = get_threader($msg);
+	my ($this_id, $referent_id, $debug_text) = $threader->observe(
+		$msg->nick(), $msg->message()
 	);
-	if (defined $response) {
-		if (ref($response) eq "ARRAY") {
-			$msg->say($_) foreach @$response;
-		}
-		else {
-			$msg->say($response);
-		}
-		msg_send($msg);
-	}
+	refresh_tree($msg, $threader);
 }
 
-### Helper.  Process a list of commands.
-sub try_all {
-	my ($obj, $msg, $mode, $nick, $addressed) = @_;
-	my $response;
+sub on_join {
+	my $msg = shift;
+	my $threader = get_threader($msg);
+	my ($this_id, $referent_id, $debug_text) = $threader->arrival(
+		$msg->nick(), $msg->ident(), $msg->host()
+	);
+	refresh_tree($msg, $threader);
+}
 
-#  warn(
-#    scalar(localtime),
-#    ": Lag = ",
-#    $obj->ts30clirecv() - $obj->ts20svrsend(),
-#    " second(s)\n"
-#  );
+sub on_kick {
+	my $msg = shift;
+	my $threader = get_threader($msg);
+	my ($this_id, $referent_id, $debug_text) = $threader->departure(
+		$msg->nick(), $msg->ident(), $msg->host()
+	);
+	refresh_tree($msg, $threader);
+}
 
-	# Clean up input.
-	$msg =~ s/\s+/ /g;
-	$msg =~ s/^\s+//;
-	$msg =~ s/\s+$//;
+sub on_quit {
+	my $msg = shift;
 
-	$mode = "private" unless $mode;
+	# TODO - Find all the channels the person is in.  Depart from each
+	# individually.
 
-	# Try things.
-	$response = try_uptime($msg, $mode, $nick, $addressed);
-	return $response if defined $response;
+#	my $threader = get_threader($msg);
+#	my ($this_id, $referent_id, $debug_text) = $threader->departure(
+#		$msg->nick(), $msg->ident(), $msg->host()
+#	);
+#	refresh_tree($msg, $threader);
+}
 
-	my $net = $obj->network();
-	my $chn = $obj->channel();
+sub on_part {
+	my $msg = shift;
+	my $threader = get_threader($msg);
+	my ($this_id, $referent_id, $debug_text) = $threader->departure(
+		$msg->nick(), $msg->ident(), $msg->host()
+	);
+	refresh_tree($msg, $threader);
+}
 
-	my $nk = substr($net, 0, 2);
+sub on_nick {
+	my $msg = shift;
+	my $threader = get_threader($msg);
+	my ($this_id, $referent_id, $debug_text) = $threader->rename(
+		$msg->nick(), $msg->newnick(), $msg->ident(), $msg->host()
+	);
+	refresh_tree($msg, $threader);
+}
 
-	unless (exists $tabs{$nk}{$chn}) {
+sub on_ping { undef }
+sub on_mode { undef }
 
-		my $threader = Text::Conversation->new(
-			debug         => 1,
-			thread_buffer => 30,
-		);
+### Helpers.
 
-		my $tab  = $nb->add( "$nk$chn", -label => "$nk$chn" );
+# Refresh the conversation tree for this network/channel combination.
 
-		my $tree = $tab->Scrolled(
+sub refresh_tree {
+	my ($msg, $threader) = @_;
+return;
+	my $net = $msg->network();
+	my $chn = $msg->channel();
+
+	my $tree;
+	if (exists $trees{$net}{$chn}) {
+		$tree = $trees{$net}{$chn};
+	}
+	else {
+		my $tab  = $nb->add( "$net$chn", -label => "$net$chn" );
+
+		$tree = $tab->Scrolled(
 			'Tree',
 			-separator        => '/',
 			-background       => "white",
@@ -139,20 +148,9 @@ sub try_all {
 			-side   => 'top'
 		);
 
-		$tabs{$nk}{$chn}  = $tab;
-		$trees{$nk}{$chn} = $tree;
-		$threaders{$nk}{$chn} = $threader;
+		$tabs{$net}{$chn}  = $tab;
+		$trees{$net}{$chn} = $tree;
 	}
-
-	my $threader = $threaders{$nk}{$chn};
-	my ($this_id, $referent_id, $debug_text) = $threader->observe($nick, $msg);
-
-	# Rebuild the tree.
-	# XXX - I'm throwing brute CPU at the problem of how to manage a
-	# tree view.  There's some impedance mismatch between what observe()
-	# returns and what TK::Tree expects.
-
-	my $tree = $trees{$nk}{$chn};
 
 	$tree->delete("all");
 	foreach my $id ($threader->_id_list()) {
@@ -163,4 +161,16 @@ sub try_all {
 	}
 
 	$top->update();
+}
+
+# Return the threader for this network/channel, or create one.
+
+sub get_threader {
+	my $msg = shift;
+
+	my $net = $msg->network();
+	my $chn = $msg->channel();
+
+	$threaders{$net}{$chn} ||= Text::Conversation->new( debug => 1 );
+	return $threaders{$net}{$chn};
 }

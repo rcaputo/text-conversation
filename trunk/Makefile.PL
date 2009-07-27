@@ -12,7 +12,12 @@ WriteMakefile(
 	ABSTRACT     => 'Turn a conversation into threads, one line at a time.',
 	LICENSE      => 'perl',
 	VERSION_FROM => 'lib/Text/Conversation.pm',
-
+	META_ADD     => {
+		resources  => {
+			license    => 'http://dev.perl.org/licenses/',
+			repository => 'http://thirdlobe.com/svn/text-conversation/trunk'
+		},
+	},
 	PREREQ_PM    => {
 		'Lingua::Stem::Snowball'  =>  0.7,
 		'Lingua::StopWords::EN'   =>  0.0,

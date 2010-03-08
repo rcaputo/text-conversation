@@ -1,5 +1,3 @@
-# $Id$
-
 package Text::Conversation;
 
 use warnings;
@@ -920,7 +918,8 @@ https://rt.cpan.org/Dist/Display.html?Status=Active&Queue=Text-Conversation
 
 =head1 REPOSITORY
 
-http://thirdlobe.com/svn/text-conversation/
+http://github.com/rcaputo/text-conversation
+http://gitorious.org/text-conversation
 
 =head1 OTHER RESOURCES
 
@@ -935,7 +934,7 @@ irc.perl.org.
 =head1 LICENSE
 
 Except where otherwise noted, Text::Conversation is Copyright
-2005-2009 by Rocco Caputo.  All rights are reserved.
+2005-2010 by Rocco Caputo.  All rights are reserved.
 Text::Conversation is free software.  You may modify and/or
 redistribute it under the same terms as Perl itself.
 

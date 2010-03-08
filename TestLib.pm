@@ -1,5 +1,3 @@
-# $Id$
-
 package TestLib;
 
 use warnings;

@@ -1,5 +1,4 @@
 #!/usr/bin/perl
-# $Id$
 
 # A relatively simple IRC bot, if you call managing multiple channels
 # on multiple networks, and displaying each channel in a separate Tk

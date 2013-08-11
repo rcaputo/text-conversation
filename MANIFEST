@@ -1,9 +1,0 @@
-# $Id$
-CHANGES
-MANIFEST
-Makefile.PL
-README
-TestLib.pm
-examples/tk-irc.perl
-lib/Text/Conversation.pm
-t/simple.t

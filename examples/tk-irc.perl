@@ -20,14 +20,16 @@ use POE::Component::IRC;
 use Text::Conversation;
 
 my %networks = (
-	rh => {
+	perl => {
 		host => "irc.perl.org",
 		port => 6667,
-		chan => [ "#IRC.pm" ],
-		nick => "thread",
-	}
+		chan => [ "#bots", "#poe" ],
+		nick => "textConvEg",
+	},
 );
 
+$poe_main_window->geometry('600x400');
+$poe_main_window->title("Text::Conversation IRC Test");
 my $nb = $poe_main_window->NoteBook()->pack(-fill => 'both', -expand => 1);
 
 my %tabs;
@@ -39,7 +41,7 @@ my %threaders;
 
 while (my ($net, $info) = each %networks) {
 	# Create the component that will represent an IRC network.
-	POE::Component::IRC->new($net);
+	$info->{bot} = POE::Component::IRC->spawn(%$info);
 
 	# Create the session that will interact with that network.
 	POE::Session->create(
@@ -67,15 +69,15 @@ exit 0;
 sub bot_start {
 	my ($kernel, $heap, $session) = @_[KERNEL, HEAP, SESSION];
 
-	$kernel->post( $heap->{network} => register => "all" );
+	$heap->{bot}->yield(register => 'all');
 
 	my $number = $$ % 1000;
 
-	$kernel->post(
-		$heap->{network} => connect => {
+	$heap->{bot}->yield(
+		connect => {
 			Nick      => "$heap->{nick}$number",
 			Username  => "threadbot$number",
-			Ircname   => "Text::Conversation test bot number $number",
+			Ircname   => "Text::Conversation test bot #$number",
 			Server    => $heap->{host},
 			Port      => $heap->{port},
 		}
@@ -87,7 +89,7 @@ sub bot_start {
 sub on_connect {
 	my ($kernel, $bot, $heap) = @_[KERNEL, SENDER, HEAP];
 	foreach my $channel (@{$heap->{chan}}) {
-		$kernel->post($bot => join => $channel);
+		$heap->{bot}->yield(join => $channel);
 	}
 }
 
@@ -119,28 +121,35 @@ sub on_message {
 		my $threader = Text::Conversation->new();
 
 		# Create a notebook tab for the channel.
-		my $tab  = $nb->add( "$net$channel", -label => "$net$channel" );
+		my $tab = $nb->add(
+			"$net$channel",
+			-label => "$net$channel",
+			-state => "normal",
+		);
+
+		# For some reason the tab isn't displaying until it's raised.
+		$nb->raise("$net$channel");
 
 		# Create a Tk tree widget to display threads.
 		my $tree = $tab->Scrolled(
 			'Tree',
-			-separator        => '/',
-			-background       => "white",
-			-foreground       => "blue",
-			-relief           => 'groove',
-			-exportselection  => 1,
-			-scrollbars       => 'oe',
-			-height           => 40,
-			-width            => 180,
-			-itemtype         => 'text',
-			-selectmode       => 'extended',
+			-background      => "white",
+			-exportselection => 1,
+			-foreground      => "blue",
+			-height          => 40,
+			-itemtype        => 'text',
+			-relief          => 'groove',
+			-scrollbars      => 'osoe',
+			-selectmode      => 'extended',
+			-separator       => '/',
+			-width           => 120,
 		);
 
 		$tree->pack(
 			-expand => 'yes',
 			-fill   => 'both',
-			-padx   => 15,
-			-pady   => 15,
+			-padx   => 5,
+			-pady   => 5,
 			-side   => 'top'
 		);
 
@@ -167,7 +176,8 @@ sub on_message {
 	foreach my $id ($threader->_id_list()) {
 		$tree->add(
 			$threader->_id_fully_qualified($id),
-			-text => $threader->_id_get_text($id),
+			-text     => $threader->_id_get_text($id),
+			-itemtype => 'text',
 		);
 	}
 }

@@ -3,9 +3,6 @@ package Text::Conversation;
 use warnings;
 use strict;
 
-use vars qw($VERSION);
-$VERSION = '0.050';
-
 use Lingua::StopWords::EN qw(getStopWords);
 use Lingua::Stem::Snowball qw(stem);
 use String::Approx qw(amatch adistr);
